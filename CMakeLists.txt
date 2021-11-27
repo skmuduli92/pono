@@ -6,6 +6,7 @@ set(PONO_MAJOR 0)   # Major component of Pono version
 set(PONO_MINOR 1)   # Minor component of Pono version
 set(PONO_RELEASE 1) # Release component of Pono version
 
+
 # handle different versions of CMake
 if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0 AND NOT APPLE)
   set(CMAKE_CXX17_STANDARD_COMPILE_OPTION "-std=c++17")
@@ -64,9 +65,10 @@ message("-- FOUND FLEX INCLUDE DIRS: ${FLEX_INCLUDE_DIRS}")
 set(SMT_SWITCH_DIR "${PROJECT_SOURCE_DIR}/deps/smt-switch")
 
 # rely on cmake modules from smt-switch (required anyway)
-set(CMAKE_MODULE_PATH ${SMT_SWITCH_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${SMT_SWITCH_DIR}/cmake)
 
 find_package(GMP REQUIRED)
+find_package(Poly REQUIRED)
 
 # Check that dependencies are there
 if (NOT EXISTS "${SMT_SWITCH_DIR}/local/include/smt-switch/smt.h")
@@ -81,8 +83,8 @@ if (NOT EXISTS "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-btor.a")
   message(FATAL_ERROR "Missing smt-switch boolector library -- try running ./contrib/setup-smt-switch.sh")
 endif()
 
-if (NOT EXISTS "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-cvc4.a")
-  message(FATAL_ERROR "Missing smt-switch cvc4 library -- try running ./contrib/setup-smt-switch.sh --with-cvc4")
+if (NOT EXISTS "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-cvc5.a")
+  message(FATAL_ERROR "Missing smt-switch cvc5 library -- try running ./contrib/setup-smt-switch.sh --cvc5")
 endif()
 
 if (WITH_MSAT)
@@ -130,6 +132,7 @@ set(INCLUDE_DIRS
   # generated Bison headers go in build directory
   "${CMAKE_CURRENT_BINARY_DIR}"
   "${GMP_INCLUDE_DIR}"
+  "${Poly_INCLUDE_DIR}"
   "${FLEX_INCLUDE_DIRS}"
   )
 
@@ -223,7 +226,7 @@ if (BUILD_PYTHON_BINDINGS)
 endif()
 
 target_link_libraries(pono-lib PUBLIC "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-btor.a")
-target_link_libraries(pono-lib PUBLIC "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-cvc4.a")
+target_link_libraries(pono-lib PUBLIC "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-cvc5.a")
 
 if (WITH_MSAT)
   target_link_libraries(pono-lib PUBLIC "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-msat.a")
@@ -261,6 +264,7 @@ endif()
 target_link_libraries(pono-lib PUBLIC "${SMT_SWITCH_DIR}/local/lib/libsmt-switch.a")
 target_link_libraries(pono-lib PUBLIC "${PROJECT_SOURCE_DIR}/deps/btor2tools/build/lib/libbtor2parser.a")
 target_link_libraries(pono-lib PUBLIC "${GMPXX_LIBRARIES}")
+target_link_libraries(pono-lib PUBLIC "${PolyXX_LIBRARIES}")
 target_link_libraries(pono-lib PUBLIC "${GMP_LIBRARIES}")
 target_link_libraries(pono-lib PUBLIC pthread)
 target_link_libraries(pono-lib PUBLIC y)

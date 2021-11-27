@@ -158,7 +158,7 @@ const option::Descriptor usage[] = {
     "",
     "smt-solver",
     Arg::NonEmpty,
-    "  --smt-solver \tSMT Solver to use: btor, msat, or cvc4." },
+    "  --smt-solver \tSMT Solver to use: btor, msat, or cvc5." },
   { LOGGING_SMT_SOLVER,
     0,
     "",
@@ -412,7 +412,7 @@ const option::Descriptor usage[] = {
     Arg::None,
     "  --ic3sa-interp \tuse interpolants to find more terms during refinement "
     "(default: off)" },
-    { PRINT_WALL_TIME,
+  { PRINT_WALL_TIME,
     0,
     "",
     "print-wall-time",
@@ -504,8 +504,8 @@ ProverResult PonoOptions::parse_and_set_options(int argc,
         case SMT_SOLVER: {
           if (opt.arg == std::string("btor")) {
             smt_solver_ = smt::BTOR;
-          } else if (opt.arg == std::string("cvc4")) {
-            smt_solver_ = smt::CVC4;
+          } else if (opt.arg == std::string("cvc5")) {
+            smt_solver_ = smt::CVC5;
           } else if (opt.arg == std::string("msat")) {
             smt_solver_ = smt::MSAT;
           } else {
@@ -560,8 +560,12 @@ ProverResult PonoOptions::parse_and_set_options(int argc,
         case CEG_BV_ARITH: ceg_bv_arith_ = true; break;
         case CEG_BV_ARITH_MIN_BW: ceg_bv_arith_min_bw_ = atoi(opt.arg); break;
         case PROMOTE_INPUTVARS: promote_inputvars_ = true; break;
-        case SYGUS_OP_LVL: sygus_use_operator_abstraction_ = atoi(opt.arg); break;
-        case SYGUS_TERM_MODE: sygus_term_mode_ = SyGuSTermMode(atoi(opt.arg)); break;
+        case SYGUS_OP_LVL:
+          sygus_use_operator_abstraction_ = atoi(opt.arg);
+          break;
+        case SYGUS_TERM_MODE:
+          sygus_term_mode_ = SyGuSTermMode(atoi(opt.arg));
+          break;
         case IC3SA_INITIAL_TERMS_LVL: {
           ic3sa_initial_terms_lvl_ = atoi(opt.arg);
           if (ic3sa_initial_terms_lvl_ > 4) {
@@ -589,10 +593,10 @@ ProverResult PonoOptions::parse_and_set_options(int argc,
           "Counterexample-guided prophecy only supported with MathSAT so far");
     }
 
-    if (smt_solver_ == smt::CVC4
+    if (smt_solver_ == smt::CVC5
         && ic3_variants().find(engine_) != ic3_variants().end()) {
       throw PonoException(
-          "CVC4 cannot handle multiple solver instances, and thus does not "
+          "CVC5 cannot handle multiple solver instances, and thus does not "
           "currently support IC3 variants.");
     }
   }
@@ -645,8 +649,7 @@ string to_string(Engine e)
       res = "mbic3";
       break;
     }
-    case IC3_BOOL:
-    {
+    case IC3_BOOL: {
       res = "ic3bool";
       break;
     }
